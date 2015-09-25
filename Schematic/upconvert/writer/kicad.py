@@ -55,7 +55,6 @@ class KiCAD(object):
 
         with open(filename, "w") as f:
             self.write_header(f, design)
-            self.write_libs(f, library_filename)
             self.write_eelayer(f)
             self.write_descr(f, design)
             for ann in design.design_attributes.annotations:
@@ -82,11 +81,6 @@ class KiCAD(object):
         else:
             f.write(time.tzname[0])
         f.write('\n')
-
-
-    def write_libs(self, f, library_filename):
-        """ Write the LIBS section of a kiCAD schematic """
-        f.write('LIBS:%s\n' % (splitext(library_filename)[0],))
 
 
     def write_eelayer(self, f):
