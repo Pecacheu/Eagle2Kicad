@@ -1,6 +1,6 @@
 import logging
 import traceback
-import os.path
+import os
 from datetime import datetime
 from argparse import ArgumentParser
 
@@ -24,7 +24,7 @@ def startGui():
     try:
         import_tk()
     except:
-        logging.error("Error Starting GUI. Could Not Find Tkinter module" + "Please install the Python Tkinter module")
+        logging.error("Error Starting GUI. Could Not Find Tkinter module. Please install the Python Tkinter module.")
         return
 
     root = Tk()
@@ -74,13 +74,12 @@ def getRootNode(fileName):
 def convertBoardGUI():
     fileName = askopenfilename(title="Board Input", filetypes=[('Eagle V6 Board', '.brd'), ('all files', '.*')],
                                defaultextension='.brd')
-    if not fileName:
-        return
+    if not fileName: return
 
+    iName = fileName.replace("/", "\\"); iName = iName.split("\\")[-1]; iName = iName.split(".")[0]
     outFileName = asksaveasfilename(title="Board Output", filetypes=[('KiCad Board', '.brd'), ('all files', '.*')],
-                                    defaultextension='.brd', initialfile=os.path.splitext(fileName)[0] + "KiCad")
-    if not outFileName:
-        return
+                                    defaultextension='.brd', initialfile=iName+"KiCad")
+    if not outFileName: return
 
     val = convertBoard(fileName, outFileName)
     if val[0]:
@@ -119,14 +118,13 @@ def convertLibGUI():
                                defaultextension='.lbr')
     if not fileName: return
 
+    iName = fileName.replace("/", "\\"); iName = iName.split("\\")[-1]; iName = iName.split(".")[0]
     modFileName = asksaveasfilename(title="Module Output Filename",
-                                    filetypes=[('KiCad Module', '.mod'), ('all files', '.*')], defaultextension='.mod',
-                                    initialfile=os.path.splitext(fileName)[0])
+        filetypes=[('KiCad Module', '.mod'), ('all files', '.*')], defaultextension='.mod', initialfile=iName)
     if not modFileName: return
 
     symFileName = asksaveasfilename(title="Symbol Output Filename",
-                                    filetypes=[('KiCad Symbol', '.lib'), ('all files', '.*')], defaultextension='.lib',
-                                    initialfile=os.path.splitext(fileName)[0])
+        filetypes=[('KiCad Symbol', '.lib'), ('all files', '.*')], defaultextension='.lib', initialfile=iName)
     if not symFileName: return
 
     val = convertLib(fileName, symFileName, modFileName)
@@ -178,7 +176,17 @@ def convertLib(fileName, symFileName, modFileName):
 
 
 def convertSchGUI():
-    val = convertSch("N/A", "N/A")
+    fileName = askopenfilename(title="Input Schematic", filetypes=[('Eagle V6 Schematic', '.sch'), ('all files', '.*')],
+        defaultextension='.sch')
+    if not fileName: return
+
+    iName = fileName.replace("/", "\\"); iName = iName.split("\\")[-1]; iName = iName.split(".")[0]
+    modFileName = asksaveasfilename(title="Schematic Output File", filetypes=[('KiCad Schematic', '.sch'),
+        ('all files', '.*')], defaultextension='.sch', initialfile=iName+"KiCad")
+    if not modFileName: return
+
+    val = convertSch(fileName, modFileName)
+
     if val[0]:
         showinfo("Conversion Complete", val[1])
     else:
@@ -186,15 +194,14 @@ def convertSchGUI():
 
 
 def convertSch(schFile, outFile):
-    logging.info("*******************************************")
-    logging.info("Converting Schem: " + schFile)
-    logging.info("Outputing: " + outFile)
-    logging.error("Error Converting  " + schFile + ":")
-    logging.error("Schematic Conversion not yet Supported")
-    logging.info("*******************************************\n\n")
+    name = schFile.replace("/", "\\")
+    name = name.split("\\")[-1]
+    name = name.split(".")[0]
 
-    return False, "Converting Schematics is not yet supported"
+    os.system("cd Schematic; python -m upconvert.upconverter -i " +
+        schFile+" -f eaglexml -o "+outFile+" -t kicad --unsupported")
 
+    return True, "Conversion of Schematic '" + name + "' Complete"
 
 
 def parseargs():
